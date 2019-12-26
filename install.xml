@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <code>Additional items in admin ID</code>
+	<name>WebExchange, XML items in admin panel</name>
+	<version>0.6</version>
+	<author>Turas RD</author>
+    <description>Show WebExchange, XML links at left menu</description>
+	<link>https://www.turasstudio.com/</link>
+	<file path="admin/controller/common/column_left.php">
+		<operation>
+			<search><![CDATA[
+				$this->load->model('sale/order');
+				]]></search>
+			<add position="before"><![CDATA[      
+
+			if ($this->user->hasPermission('access', 'setting/setting')) {
+				$children_items[] = array(
+					'name'	   => 'WebExchange', //$this->language->get('text_tax_rate'),
+					'href'     => $this->url->link('extension/module/web_exchange', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+			if ($this->user->hasPermission('access', 'setting/setting')) {
+				$children_items[] = array(
+					'name'	   => 'XML', //$this->language->get('text_tax_rate'),
+					'href'     => $this->url->link('extension/module/web_exchange', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+			if ($this->user->hasPermission('access', 'setting/setting')) {
+				$children_items[] = array(
+					'name'	   => 'Customers', //$this->language->get('text_tax_rate'),
+					'href'     => $this->url->link('extension/module/web_exchange', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()
+				);
+			}
+
+			$data['menus'][] = array(
+				'id'       => 'menu-report',
+				'icon'	   => 'fa-paw', 
+				'name'	   => 'Optovik',
+				'href'     => '',
+				'children' => $children_items
+			);
+				
+				]]></add>
+		</operation>		
+	</file>
+</modification>
