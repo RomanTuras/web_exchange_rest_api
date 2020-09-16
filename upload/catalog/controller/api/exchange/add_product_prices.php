@@ -3,8 +3,6 @@
 /**
  * Class ControllerApiExchangeAddProductPrices
  *
- * Before exchange, table was erasing
- *
  * Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
@@ -13,7 +11,10 @@
  * product_id - Int
  * price_id - Int
  * price_value - Int
+ * price_special_value - Int
+ * special_date_end (String) date in format '2019-12-28'
  */
+
 
 class ControllerApiExchangeAddProductPrices extends Controller {
 
@@ -48,20 +49,60 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
                 $this->load->model('api/exchange/prices');
+                $json['success'] = sprintf($this->language->get('error'));
 
                 if (isset($this->request->post['productPrices'])) {
                     $productPrices = $_POST['productPrices'];
-                    $this->model_api_exchange_prices->emptyProductPriceTable();
+//                    $this->log->write(print_r($productPrices, true));
 
                     foreach (json_decode($productPrices) as $item){
-                        $this->model_api_exchange_prices->
-                        addProductPrice($item->product_id, $item->price_id, $item->price_value);
+                        $price_special_value = isset($item->price_special_value) ? $item->price_special_value : 0;
+                        $special_date_end = isset($item->special_date_end) ? $item->special_date_end : '0000-00-00';
+                        $arr = array(
+                            'product_id' => $item->product_id,
+                            'price_id' => $item->price_id,
+                            'price_value' => $item->price_value,
+                            'price_special_value' => $price_special_value,
+                            'special_date_end' => isset($item->special_date_end) ? $item->special_date_end : "2065-01-08",
+                            'customer_group_id' => 0
+                        );
+                        $data = json_encode($arr);
+                        $data = json_decode($data);
+
+                        if($item->price_id == 4){//Розница
+                            if($this->model_api_exchange_prices->isProductExist($item->product_id)){
+                                $this->model_api_exchange_prices->updateProductPrice($item->product_id, $item->price_value);
+                            }
+                        }
+                        $price_type_in_product = $this->model_api_exchange_prices->isPriceTypeExistInProduct($item->product_id, $item->price_id);
+                        if($price_type_in_product){
+                            $this->model_api_exchange_prices->updatePriceTypeInProduct($data);
+                        } else {
+                            $this->model_api_exchange_prices->addProductPrice($data);
+                        }
+
+
+//                        $price_types_customer = $this->model_api_exchange_prices->getPriceTypesCustomer();
+//                        $price_types_customer = json_decode($price_types_customer, true);
+//                        $this->log->write(print_r($price_types_customer, true));
+//                        foreach ($price_types_customer as $price_id => $group_id) {
+//                            if($price_id == $item->price_id) {
+                                $data->customer_group_id = $item->price_id;
+                                if($price_special_value > 0){
+                                    if($this->model_api_exchange_prices->isSpecialExistInProduct($item->product_id, $item->price_id)){
+                                        $this->model_api_exchange_prices->updateSpecial($data);
+                                    }else{
+                                        $this->model_api_exchange_prices->addSpecial($data);
+                                    }
+                                }
+//                            }
+//                        }
+
                     }
 
                     $json['success'] = sprintf($this->language->get('success'));
                 }
 
-                $json['success'] = sprintf($this->language->get('success'));
             }
         }
 

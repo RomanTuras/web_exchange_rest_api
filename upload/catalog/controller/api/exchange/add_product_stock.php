@@ -1,19 +1,23 @@
 <?php
 
 /**
- * Class ControllerApiExchangeGetImages
+ * Class ControllerApiExchangeAddProductStock
  *
- *  Params incoming from POST:
+ * Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
  *
- * Returned array of JSON's
+ * `productStock` - array of JSON's, which with fields:
+ * product_id - Int
+ * free_remains - Int
+ * products_on_way - Int
+ * under_order - Boolean
  */
 
-class ControllerApiExchangeGetImages extends Controller {
+class ControllerApiExchangeAddProductStock extends Controller {
 
     /**
-     * Getting all images and hash from images table
+     * Add types of prices
      */
     public function index(){
         $this->load->language('api/exchange/web_exchange');
@@ -42,21 +46,21 @@ class ControllerApiExchangeGetImages extends Controller {
             if (!in_array($this->request->server['REMOTE_ADDR'], $ip_data)) {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
-                $this->load->model('api/exchange/images');
+                $this->load->model('api/exchange/products');
                 $json['success'] = sprintf($this->language->get('error'));
 
-                $tableRow = array();
-                $result = $this->model_api_exchange_images->getAllImages();
-                if ($result->num_rows > 0) {
-                    foreach($result->rows as $row) {
-                        array_push($tableRow, $row);
+                if (isset($this->request->post['productStock'])) {
+                    $productStocks = $_POST['productStock'];
+
+                    foreach (json_decode($productStocks) as $type){
+                        if( $this->model_api_exchange_products->isProductExist($type->product_id) ){
+                            $this->model_api_exchange_products->
+                            updateProductStock($type->product_id, $type->free_remains);
+                        }
                     }
+                    $json['success'] = sprintf($this->language->get('success'));
                 }
-                $path_to_log_images = dirname(__DIR__, 4);
-                $log_images = $path_to_log_images.'/admin/controller/extension/module/log_images.hlp';
-                if(file_exists($log_images))unlink($log_images);
-                $json['images'] = $tableRow;
-                $json['success'] = sprintf($this->language->get('success'));
+
             }
         }
 
@@ -64,8 +68,4 @@ class ControllerApiExchangeGetImages extends Controller {
         $this->response->setOutput(json_encode($json));
     }
 
-//                $p = dirname($this->request->server['DOCUMENT_ROOT']);
-//                $json['text'] = $p.'/image/img/';
-
 }
-

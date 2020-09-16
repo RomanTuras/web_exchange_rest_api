@@ -21,8 +21,10 @@ class ModelExtensionModuleWebExchange extends Model {
         $this->db->query("
             CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "product_prices` (
             `id` INT(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY(`id`), 
-            `product_id` INT(11), `price_id` INT(11), `price_value` DECIMAL(15,4)) 
-            CHARACTER SET utf8 COLLATE utf8_general_ci");
+            `product_id` INT(11), `price_id` INT(11), 
+            `price_value` DECIMAL(15,4) DEFAULT 0.0000,
+            `price_special_value` DECIMAL(15,4) DEFAULT 0.0000,
+            `special_date_end` DATE DEFAULT '0000-00-00') CHARACTER SET utf8 COLLATE utf8_general_ci");
     }
 
     public function uninstallPriceTables() {

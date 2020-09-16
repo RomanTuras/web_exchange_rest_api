@@ -1,19 +1,19 @@
 <?php
-
 /**
- * Class ControllerApiExchangeGetImages
+ * Class ControllerApiExchangeGetUris
  *
  *  Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
  *
- * Returned array of JSON's
+ * Returned array of URI's for the all goods
  */
 
-class ControllerApiExchangeGetImages extends Controller {
+class ControllerApiExchangeGetUris extends Controller {
 
+    private $listOfIds = array();
     /**
-     * Getting all images and hash from images table
+     * Getting all uri's from products table
      */
     public function index(){
         $this->load->language('api/exchange/web_exchange');
@@ -30,6 +30,7 @@ class ControllerApiExchangeGetImages extends Controller {
             $api_info = $this->model_account_api->login('Default', $this->request->post['key']);
         }
         $json['success'] = sprintf($this->language->get('error'));
+
         if ($api_info) {
             // Check if IP is allowed
             $ip_data = array();
@@ -42,30 +43,60 @@ class ControllerApiExchangeGetImages extends Controller {
             if (!in_array($this->request->server['REMOTE_ADDR'], $ip_data)) {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
-                $this->load->model('api/exchange/images');
+                $this->load->model('api/exchange/uris');
                 $json['success'] = sprintf($this->language->get('error'));
 
                 $tableRow = array();
-                $result = $this->model_api_exchange_images->getAllImages();
+                
+                $result = $this->model_api_exchange_uris->getAllProducts();
                 if ($result->num_rows > 0) {
                     foreach($result->rows as $row) {
-                        array_push($tableRow, $row);
+                        array_push($this->listOfIds, $row['product_id']);
+                        $category_id = $row['category_id'];
+                        array_push($this->listOfIds, $category_id);
+                        $this->getParentCategories($category_id);
+                        $aliases = $this->getAliases();
+                        array_push($tableRow, array( 
+                            'product_id' => $row['product_id'],
+                            'path' => $aliases
+                        ));
+                        $this->listOfIds = [];
                     }
                 }
-                $path_to_log_images = dirname(__DIR__, 4);
-                $log_images = $path_to_log_images.'/admin/controller/extension/module/log_images.hlp';
-                if(file_exists($log_images))unlink($log_images);
-                $json['images'] = $tableRow;
+                $json['links'] = $tableRow;
                 $json['success'] = sprintf($this->language->get('success'));
             }
         }
-
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
     }
 
-//                $p = dirname($this->request->server['DOCUMENT_ROOT']);
-//                $json['text'] = $p.'/image/img/';
+    /**
+     * Getting aliases for ID's
+     */
+    private function getAliases()
+    {
+        $aliases = 'https://optovik.shop/';
+        $y = array_reverse($this->listOfIds);
+        foreach($y as $id){
+            $aliases .= $this->model_api_exchange_uris->getSeoAlias($id);
+            $aliases .= '/';
+        }
+        return $aliases;
+    }
+
+    /**
+     * Getting ID's of the all nested categories
+     * @param int
+     */
+    private function getParentCategories($category_id)
+    {
+        $parent_id = $this->model_api_exchange_uris->getParentId($category_id);
+        if($parent_id != 0) {
+            array_push($this->listOfIds, $parent_id);
+            $this->getParentCategories($parent_id, $this->listOfIds);
+        }
+    }
 
 }
 

@@ -39,7 +39,7 @@ class ModelApiExchangeCategories extends Model {
     function addCategory($data){
         $top = $data->parent_id == 0 ? 1 : 0;
         $this->db->query("INSERT INTO `" . DB_PREFIX . "category` (category_id, parent_id, top, status) 
-        VALUES('$data->category_id', '$data->parent_id', '$top', 1)");
+        VALUES('$data->category_id', '$data->parent_id', '$top', '$data->status')");
     }
 
     /**
@@ -59,7 +59,7 @@ class ModelApiExchangeCategories extends Model {
     function updateCategory($data){
         $top = $data->parent_id == 0 ? 1 : 0;
         $this->db->query("UPDATE `" . DB_PREFIX . "category` 
-        SET `parent_id`='$data->parent_id', `top`='$top', `status`=1 WHERE `category_id`='$data->category_id'");
+        SET `parent_id`='$data->parent_id', `top`='$top', `status`='$data->status' WHERE `category_id`='$data->category_id'");
     }
 
     /**

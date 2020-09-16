@@ -9,6 +9,7 @@
  * category_id - Int
  * parent_id - Int
  * name - String
+ * status - Int -- visibility of the category (1 - visible, 0 - not)
  * -----
  * Before exchange all categories will be hide from store
  * Description, image, meta_description, meta_keywords - will not be a overwritten
@@ -53,24 +54,28 @@ class ControllerApiExchangeAddCategories extends Controller {
                 $this->load->model('api/exchange/common');
 
                 if (isset($this->request->post['categories'])) {
-                    $this->hideAllCategories();
+//                    $this->hideAllCategories();
                     $this->model_api_exchange_categories->clearCategoryPathTable();
                     $categories = $_POST['categories'];
+
+//                    $this->log->write('Categories: '.print_r($categories, true));
 
                     $language_id = $this->model_api_exchange_common->getLanguageIdByCode('ru-ru');
 
                     foreach (json_decode($categories) as $category){
-                        $keyword = $this->model_api_exchange_common->cyrToLat($category->name);
+                        $name_category = $category->name; //$this->decodeUtf($category->name);
+                        $keyword = $this->model_api_exchange_common->cyrToLat($name_category);
                         $query = 'category_id='.$category->category_id;
                         $arr = array(
                             'category_id' => $category->category_id,
                             'parent_id' => $category->parent_id,
-                            'name' => $category->name,
+                            'name' => $name_category,
                             'language_id' => $language_id,
                             'store_id' => 0,
                             'layout_id' => 0,
                             'keyword' => $keyword,
-                            'query' => $query
+                            'query' => $query,
+                            'status' => $category->status
                         );
                         $data = json_encode($arr);
                         $data = json_decode($data);
@@ -93,6 +98,8 @@ class ControllerApiExchangeAddCategories extends Controller {
 
                 $this->model_api_exchange_common->deleteCacheFiles('/home/h63053/data/www/storage_optovik_shop/cache',
                     '[^cache.octemplates.category_in_menu*]');
+//                $this->model_api_exchange_common->rebuildCategories();
+                $this->model_api_exchange_common->repairCategories();
             }
         }
 
@@ -105,6 +112,24 @@ class ControllerApiExchangeAddCategories extends Controller {
      */
     private function hideAllCategories(){
         $this->model_api_exchange_categories->hideAllCategories();
+    }
+
+    function decodeUtf($str){
+        $cyr = [
+            'é', 'ö', 'ó', 'ê', 'å', 'í', 'ã', 'ø', 'ù', 'ç', 'õ', 'ú', 'ô', 'û', 'â', 'à', 'ï',
+            'ð', 'î', 'ë', 'ä', 'æ', 'ý', 'ÿ', '÷', 'ñ', 'ì', 'è', 'ò', 'ü', 'á', 'þ', '¸',
+            'É', 'Ö', 'Ó', 'Ê', 'Å', 'Í', 'Ã', 'Ø', 'Ù', 'Ç', 'Õ', 'Ú', 'Ô', 'Û', 'Â', 'À', 'Ï',
+            'Ð', 'Î', 'Ë', 'Ä', 'Æ', 'Ý', 'ß', '×', 'Ñ', 'Ì', 'È', 'Ò', 'Ü', 'Á', 'Þ', '¨'
+        ];
+        $lat = [
+            'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', 'ф', 'ы', 'в', 'а', 'п',
+            'р', 'о', 'л', 'д', 'ж', 'э', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', 'ё',
+            'Й', 'Ц', 'У', 'К', 'Е', 'Н', 'Г', 'Ш', 'Щ', 'З', 'Х', 'Ъ', 'Ф', 'Ы', 'В', 'А', 'П',
+            'Р', 'О', 'Л', 'Д', 'Ж', 'Э', 'Я', 'Ч', 'С', 'М', 'И', 'Т', 'Ь', 'Б', 'Ю', 'Ё'
+        ];
+
+        $str = str_replace($cyr, $lat, $str);
+        return $str;
     }
 
 }

@@ -3,8 +3,6 @@
 /**
  * Class ControllerApiExchangeAddPriceTypes
  *
- * Before exchange, table was erasing
- *
  * Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
@@ -47,19 +45,26 @@ class ControllerApiExchangeAddPriceTypes extends Controller {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
                 $this->load->model('api/exchange/prices');
+                $json['success'] = sprintf($this->language->get('error'));
 
                 if (isset($this->request->post['priceTypes'])) {
                     $priceTypes = $_POST['priceTypes'];
-                    $this->model_api_exchange_prices->emptyPriceTypeTable();
 
                     foreach (json_decode($priceTypes) as $type){
-                        $this->model_api_exchange_prices->addPriceType($type->price_id, $type->description);
+                        if( $this->model_api_exchange_prices->isPriceTypeExist($type->price_id) ){
+                            $this->model_api_exchange_prices->updatePriceType($type->price_id, $type->description);
+                        } else {
+                            $this->model_api_exchange_prices->addPriceType($type->price_id, $type->description);
+                        }
+                        //deleting rows from product_prices table, with NOT actual type price
+                        if(!$type->actual) {
+                            $this->model_api_exchange_prices->deleteRowsByPriceId($type->price_id);
+                        }
                     }
 
                     $json['success'] = sprintf($this->language->get('success'));
                 }
 
-                $json['success'] = sprintf($this->language->get('success'));
             }
         }
 

@@ -84,12 +84,14 @@ class ControllerExtensionModuleWebExchange extends Controller {
 	private function getImagesLog(){
         $log_images = __DIR__.'/log_images.hlp';
         $images = array();
-        if ($fh = fopen($log_images, 'r')) {
-            while (!feof($fh)) {
-                $line = fgets($fh);
-                if(strlen($line) > 3) array_push($images, $line);
+        if(file_exists($log_images)){
+            if ($fh = fopen($log_images, 'r')) {
+                while (!feof($fh)) {
+                    $line = fgets($fh);
+                    if(strlen($line) > 3) array_push($images, $line);
+                }
+                fclose($fh);
             }
-            fclose($fh);
         }
         return $images;
     }

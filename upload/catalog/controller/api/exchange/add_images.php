@@ -3,19 +3,20 @@
 /**
  * Class ControllerApiExchangeAddImages
  *
+ * Adding additional images to product
+ *
  * Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
  *
- * `images` - array of JSON's, which with fields:
- * name - String
- * hash - String
+ * product_id - Int
+ * images - Array of JSON [{'name':'59876a.jpg'},{'name':'56132b.jpg'}]
  */
 
 class ControllerApiExchangeAddImages extends Controller {
 
     /**
-     * Adding images to DB
+     * Adding additional images to product
      * Parameters passed through POST
      */
     public function index() {
@@ -46,58 +47,36 @@ class ControllerApiExchangeAddImages extends Controller {
             if (!in_array($this->request->server['REMOTE_ADDR'], $ip_data)) {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
-                $this->load->model('api/exchange/images');
+                $this->load->model('api/exchange/products');
+                $json['success'] = sprintf($this->language->get('error'));
 
-                if (isset($this->request->post['images'])) {
-                    $images = $_POST['images'];
-                    foreach (json_decode($images) as $image){
-                        if ( $this->model_api_exchange_images->isImagePresent($image->name) ){
-                            $this->model_api_exchange_images->updateImageHashByName($image->name, $image->hash);
-                        } else {
-                            $this->model_api_exchange_images->insertImage($image->name, $image->hash);
+                if (isset($this->request->post['product_images'])) {
+                    $product_images = $_POST['product_images'];
+                    $imagePath = 'img/';
+
+                    foreach (json_decode($product_images) as $product){
+                        $images = $product->images;
+                        if( is_array($images) && count($images) > 0 ){
+                            $i = 0;
+                            foreach ( $images as $obj ){
+                                $data_image = array(
+                                    'product_id' => (int)$product->product_id,
+                                    'sort_order' => $i++,
+                                    'image' => isset($obj->name) ? $imagePath . $obj->name : ''
+                                );
+                                $json_images = json_encode($data_image);
+                                $data = json_decode($json_images);
+                                $this->model_api_exchange_products->addImage($data);
+                            }
                         }
                     }
                     $json['success'] = sprintf($this->language->get('success'));
-                    $this->checkImages();
                 }
             }
         }
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
-    }
-
-    /**
-     * Checking images from database and on the disk,
-     * if image not found from folder - deleting it from table (DB)
-     * Put result in to log file
-     */
-    private function checkImages(){
-        $path_to_log_images = dirname(__DIR__, 4);
-        $log_images = $path_to_log_images.'/admin/controller/extension/module/log_images.hlp';
-        if(file_exists($log_images))unlink($log_images);
-        $path_to_images = dirname(__DIR__, 4).'/image/img/';
-        $result = $this->model_api_exchange_images->getAllImages();
-        if ($result->num_rows > 0) {
-            $i = 0;
-            foreach($result->rows as $row) {
-                if(!file_exists($path_to_images.$row['img_name'])){
-                    $filename = $row['img_name'];
-                    $i++;
-                    $this->writeFile($log_images, $filename);
-                    $this->model_api_exchange_images->deleteImageByName($filename);
-                }
-            }
-        }
-    }
-
-    /**
-     * Written log to file
-     * @param $filename String
-     * @param $text String
-     */
-    function writeFile($filename, $text){
-        file_put_contents($filename, $text."\r\n", FILE_APPEND);
     }
 }
 

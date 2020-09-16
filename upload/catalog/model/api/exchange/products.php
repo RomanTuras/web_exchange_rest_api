@@ -28,8 +28,8 @@ class ModelApiExchangeProducts extends Model {
      * @param $data
      */
     function addProduct($data){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "product` (product_id, model, quantity, stock_status_id, image, price, status) 
-        VALUES('$data->product_id', '$data->product_id', '$data->quantity', '$data->stock_status_id', '$data->image', '$data->price', 1)");
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "product` (product_id, model, image, status, length, width, height) 
+        VALUES('$data->product_id', '$data->product_id', '$data->image', '$data->status', '$data->length', '$data->width', '$data->height')");
     }
 
     /**
@@ -38,8 +38,28 @@ class ModelApiExchangeProducts extends Model {
      */
     function updateProduct($data){
         $this->db->query("UPDATE `" . DB_PREFIX . "product` 
-        SET `quantity`='$data->quantity', `stock_status_id`='$data->stock_status_id', 
-         `image`='$data->image', `price`='$data->price', `status`=1 WHERE `product_id`='$data->product_id'");
+        SET `image`='$data->image', `status`='$data->status', `length`='$data->length', `height`='$data->height', `width`='$data->width' WHERE `product_id`='$data->product_id'");
+    }
+
+    /**
+     * Updating product stock's
+     * @param $product_id
+     * @param $quantity
+     */
+    function updateProductStock($product_id, $quantity){
+        $status = $quantity > 0 ? 1 : 0;
+        $outOfStock = 5;
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` 
+        SET `quantity`='$quantity', `status`='$status', `stock_status_id` = '$outOfStock' WHERE `product_id`='$product_id'");
+    }
+
+    /**
+     * Updating product date added (for newest goods)
+     * @param $product_id
+     */
+    function updateProductDateAdded($product_id){
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` 
+        SET `date_added` = CURRENT_TIMESTAMP WHERE `product_id`='$product_id'");
     }
 
     /**
@@ -74,8 +94,8 @@ class ModelApiExchangeProducts extends Model {
      * @param $data
      */
     function addProductDescription($data){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "product_description` (product_id, language_id, name, description, meta_title) 
-        VALUES('$data->product_id', '$data->language_id', '$data->name', '$data->description', '$data->name')");
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "product_description` (product_id, language_id, name, meta_title) 
+        VALUES('$data->product_id', '$data->language_id', '$data->name', '$data->name')");
     }
 
     /**
@@ -84,8 +104,17 @@ class ModelApiExchangeProducts extends Model {
      */
     function updateProductDescription($data){
         $this->db->query("UPDATE `" . DB_PREFIX . "product_description` 
-        SET `name`='$data->name', `description`='$data->description', 
-         `meta_title`='$data->name' WHERE `product_id`='$data->product_id'");
+        SET `name`='$data->name', `meta_title`='$data->name' WHERE `product_id`='$data->product_id'");
+    }
+
+    /**
+     * Updating only product description
+     * @param $product_id
+     * @param $description
+     */
+    function updateOnlyProductDescription($product_id, $description){
+        $this->db->query("UPDATE `" . DB_PREFIX . "product_description` 
+        SET `description`='$description' WHERE `product_id`='$product_id'");
     }
 
     /**

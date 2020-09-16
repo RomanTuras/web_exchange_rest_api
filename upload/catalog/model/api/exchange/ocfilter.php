@@ -13,19 +13,38 @@ class ModelApiExchangeOcfilter extends Model {
      * @param $keyword
      * @return bool
      */
-    function isOptionExist($option_id, $keyword){
-        $result = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ocfilter_option` 
-        WHERE `option_id` = '$option_id' AND `keyword` LIKE '$keyword'");
-        return $result->num_rows > 0 ? true : false;
+    function isOptionExist($keyword){
+        $result = $this->db->query("SELECT `option_id` FROM `" . DB_PREFIX . "ocfilter_option` 
+        WHERE `keyword` LIKE '$keyword'");
+        if ($result->num_rows > 0) {
+            foreach($result->rows as $row) {
+                return $row['option_id'];
+            }
+        }
+        return false;
     }
+
+    function isValueExist($keyword){
+        $result = $this->db->query("SELECT `value_id` FROM `" . DB_PREFIX . "ocfilter_option_value` 
+        WHERE `keyword` LIKE '$keyword'");
+        if ($result->num_rows > 0) {
+            foreach($result->rows as $row) {
+                return $row['value_id'];
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Adding option
      * @param $data
+     * @return Int option_id
      */
     function addOption($data){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option` (option_id, type, keyword, status) 
-        VALUES('$data->option_id', '$data->type', '$data->keyword', 1)");
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option` (type, keyword, status) 
+        VALUES('$data->type', '$data->keyword', '$data->status')");
+        return $this->db->getLastId();
     }
 
     /**
@@ -40,13 +59,22 @@ class ModelApiExchangeOcfilter extends Model {
     /**
      * Adding option to category
      * @param $option_id
+     * @param $category_id
      */
-    function addOptionToCategory($option_id){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_to_category` (option_id, category_id) 
-        VALUES('$option_id', '$option_id')");
+    function addOptionToCategory($option_id, $category_id){
+        $result = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ocfilter_option_to_category` 
+        WHERE `option_id` = '$option_id' AND `category_id` = '$category_id' ");
+        if ($result->num_rows == 0) {
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_to_category` (option_id, category_id) 
+            VALUES('$option_id', '$category_id')");
+        }
 
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_to_store` (option_id, store_id) 
-        VALUES('$option_id', 0)");
+        $result1 = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ocfilter_option_to_store` 
+        WHERE `option_id` = '$option_id' ");
+        if ($result1->num_rows == 0) {
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_to_store` (option_id, store_id) 
+            VALUES('$option_id', 0)");
+        }
     }
 
     /**
@@ -63,6 +91,7 @@ class ModelApiExchangeOcfilter extends Model {
     /**
      * Adding option value
      * @param $data
+     * @return
      */
     function addOptionValue($data){
         $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_value` (option_id, keyword, sort_order) 
@@ -70,19 +99,20 @@ class ModelApiExchangeOcfilter extends Model {
         $value_id = $this->db->getLastId();
         $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_value_description` (value_id, option_id, language_id, name) 
         VALUES('$value_id', '$data->option_id', '$data->language_id', '$data->name')");
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_value_to_product` (product_id, option_id, value_id) 
-        VALUES('$data->product_id', '$data->option_id', '$value_id')");
+        return $value_id;
     }
 
     /**
      * Adding option value to product
-     * @param $product_id
-     * @param $option_id
-     * @param $value_id
+     * @param $data
      */
-    function addOptionValueToProduct($product_id, $option_id, $value_id){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_value_to_product` (product_id, option_id, value_id) 
-        VALUES('$product_id', '$option_id', '$value_id')");
+    function addOptionValueToProduct($data){
+        $result = $this->db->query("SELECT * FROM `" . DB_PREFIX . "ocfilter_option_value_to_product` 
+        WHERE `option_id` = '$data->option_id' AND `value_id` = '$data->value_id' AND `product_id` = '$data->product_id' ");
+        if ($result->num_rows == 0) {
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option_value_to_product` (product_id, option_id, value_id) 
+        VALUES('$data->product_id', '$data->option_id', '$data->value_id')");
+        }
     }
 
     /**

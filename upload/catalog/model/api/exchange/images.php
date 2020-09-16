@@ -11,7 +11,7 @@ class ModelApiExchangeImages extends Model {
      * @param $img_name String
      * @return bool
      */
-    public function isImagePresent($img_name){
+    function isImagePresent($img_name){
         $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "images` WHERE `img_name` LIKE '$img_name'");
         if ($query->num_rows === 0){
             return false;

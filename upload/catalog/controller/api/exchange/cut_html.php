@@ -1,19 +1,21 @@
 <?php
 
 /**
- * Class ControllerApiExchangeGetImages
+ * Class ControllerApiExchangeCutHtml
  *
  *  Params incoming from POST:
  * `username` - API from admin panel
  * `key` - API from admin panel
+ * `text` - text with html tags
  *
- * Returned array of JSON's
+ * Returned text
  */
 
-class ControllerApiExchangeGetImages extends Controller {
+class ControllerApiExchangeCutHtml extends Controller {
 
+    private $listOfIds = array();
     /**
-     * Getting all images and hash from images table
+     * Cutting particular html tags from text
      */
     public function index(){
         $this->load->language('api/exchange/web_exchange');
@@ -30,6 +32,7 @@ class ControllerApiExchangeGetImages extends Controller {
             $api_info = $this->model_account_api->login('Default', $this->request->post['key']);
         }
         $json['success'] = sprintf($this->language->get('error'));
+        // $api_info= true; // ----
         if ($api_info) {
             // Check if IP is allowed
             $ip_data = array();
@@ -40,22 +43,18 @@ class ControllerApiExchangeGetImages extends Controller {
             }
 
             if (!in_array($this->request->server['REMOTE_ADDR'], $ip_data)) {
+            // if(!true){
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
-                $this->load->model('api/exchange/images');
                 $json['success'] = sprintf($this->language->get('error'));
 
-                $tableRow = array();
-                $result = $this->model_api_exchange_images->getAllImages();
-                if ($result->num_rows > 0) {
-                    foreach($result->rows as $row) {
-                        array_push($tableRow, $row);
-                    }
+                $text = 'empty';
+
+                if (isset($this->request->post['text'])) {
+                    $text = $this->removeHtmlHeaders($_POST['text']);
                 }
-                $path_to_log_images = dirname(__DIR__, 4);
-                $log_images = $path_to_log_images.'/admin/controller/extension/module/log_images.hlp';
-                if(file_exists($log_images))unlink($log_images);
-                $json['images'] = $tableRow;
+
+                $json['text'] = $text;
                 $json['success'] = sprintf($this->language->get('success'));
             }
         }
@@ -64,8 +63,26 @@ class ControllerApiExchangeGetImages extends Controller {
         $this->response->setOutput(json_encode($json));
     }
 
-//                $p = dirname($this->request->server['DOCUMENT_ROOT']);
-//                $json['text'] = $p.'/image/img/';
+    /**
+     * Removing HTML headers
+     * @param $str
+     * @return string
+     */
+    private function removeHtmlHeaders($str)
+    {
+        $str = preg_replace('/<html>/','',$str);
+        $str = preg_replace('/<\/html>/','',$str);
+        $str = preg_replace('/<body>/','',$str);
+        $str = preg_replace('/<\/body>/','',$str);
+        $str = preg_replace('/<a[\S\s]*?<\/a>/', '', $str);
+        $str = preg_replace('/<head[\S\s]*?head>/', '', $str);
+        $str = preg_replace('/style=&quot;[\S\s]*?&quot;/', '', $str);
+        $str = preg_replace('/style=[\S\s]*?>/', '>', $str);
+        $str = preg_replace('/<span[\S\s]*?>/', '', $str);
+        $str = addslashes($str);
+        $str = preg_replace('/<\/span>/','',$str);
+        $str = preg_replace('/<style([^&]*)style>/', '', $str);
+        return $str;
+    }
 
 }
-
