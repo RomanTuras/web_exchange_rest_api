@@ -49,6 +49,7 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
                 $this->load->model('api/exchange/prices');
+                $this->load->model('api/exchange/products');
                 $json['success'] = sprintf($this->language->get('error'));
 
                 if (isset($this->request->post['productPrices'])) {
@@ -80,29 +81,20 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                         } else {
                             $this->model_api_exchange_prices->addProductPrice($data);
                         }
-
-
-//                        $price_types_customer = $this->model_api_exchange_prices->getPriceTypesCustomer();
-//                        $price_types_customer = json_decode($price_types_customer, true);
-//                        $this->log->write(print_r($price_types_customer, true));
-//                        foreach ($price_types_customer as $price_id => $group_id) {
-//                            if($price_id == $item->price_id) {
-                                $data->customer_group_id = $item->price_id;
-                                if($price_special_value > 0){
-                                    if($this->model_api_exchange_prices->isSpecialExistInProduct($item->product_id, $item->price_id)){
-                                        $this->model_api_exchange_prices->updateSpecial($data);
-                                    }else{
-                                        $this->model_api_exchange_prices->addSpecial($data);
-                                    }
-                                }
-//                            }
-//                        }
-
+                        $data->customer_group_id = $item->price_id;
+                        if($price_special_value > 0){
+                            if($this->model_api_exchange_prices->isSpecialExistInProduct($item->product_id, $item->price_id)){
+                                $this->model_api_exchange_prices->updateSpecial($data);
+                            }else{
+                                $this->model_api_exchange_prices->addSpecial($data);
+                            }
+                        }
                     }
-
+                    $this->model_api_exchange_products->hideZeroProductsBalances();
+                    $this->model_api_exchange_products->hideEmptyCategories(0);
                     $json['success'] = sprintf($this->language->get('success'));
                 }
-
+                $this->model_api_exchange_products->repairCategories();
             }
         }
 

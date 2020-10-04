@@ -47,6 +47,7 @@ class ControllerApiExchangeCustomers extends Controller {
             }else{
                 $this->load->model('api/exchange/customers');
                 $this->load->model('api/exchange/prices');
+
                 $json['success'] = sprintf($this->language->get('error'));
 
                 if (isset($this->request->post['update'])) {
@@ -57,18 +58,8 @@ class ControllerApiExchangeCustomers extends Controller {
                         $json['phone'] = $telephone_from_server;
                         $customer_id = $this->model_api_exchange_customers->getCustomerId($telephone_from_server);
                         if( $customer_id ) {
-
-//                            $price_types_customer = $this->model_api_exchange_prices->getPriceTypesCustomer();
-//                            $price_types_customer = json_decode($price_types_customer, true);
-
-//                            foreach ($price_types_customer as $group_id => $price_id) {
-
-//                                if ((int)$price_id == (int)$customer->price_id) {
-//                                    $json['message'] = 'yes!';
-                                    $this->model_api_exchange_customers->
-                                    updateCustomer($customer_id, $customer->price_id, $customer->markup);
-//                                }
-//                            }
+                            $this->model_api_exchange_customers->
+                            updateCustomer($customer_id, $customer->price_id, $customer->markup);
                         }else $json['message'] = 'Совпадений не найдено';
                     }
                     $json['success'] = sprintf($this->language->get('success'));
@@ -87,7 +78,6 @@ class ControllerApiExchangeCustomers extends Controller {
                     $json['customers'] = $telephones;
                     $json['success'] = sprintf($this->language->get('success'));
                 }
-
             }
         }
 

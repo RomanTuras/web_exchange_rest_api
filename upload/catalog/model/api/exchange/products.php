@@ -13,6 +13,148 @@ class ModelApiExchangeProducts extends Model {
         $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 0");
     }
 
+    //TODO temporary method for store logs to DB
+    function myLog($id, $string){
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "location` (address, name) VALUES ('$id', '$string')");
+    }
+
+    /**
+     * Hiding all products, where it is price = 0 or quantity of stock < 1
+     */
+    function hideZeroProductsBalances(){
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 0 WHERE `price` = 0 OR `quantity` < 1");
+    }
+
+    function repairCategories($parent_id = 0) {
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "category WHERE parent_id = '" . (int)$parent_id . "'");
+
+        foreach ($query->rows as $category) {
+            // Delete the path below the current one
+            $this->db->query("DELETE FROM `" . DB_PREFIX . "category_path` WHERE category_id = '" . (int)$category['category_id'] . "'");
+
+            // Fix for records with no paths
+            $level = 0;
+
+            $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "category_path` WHERE category_id = '" . (int)$parent_id . "' ORDER BY level ASC");
+
+            foreach ($query->rows as $result) {
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "category_path` SET category_id = '" . (int)$category['category_id'] . "', `path_id` = '" . (int)$result['path_id'] . "', level = '" . (int)$level . "'");
+
+                $level++;
+            }
+
+            $this->db->query("REPLACE INTO `" . DB_PREFIX . "category_path` SET category_id = '" . (int)$category['category_id'] . "', `path_id` = '" . (int)$category['category_id'] . "', level = '" . (int)$level . "'");
+
+            $this->repairCategories($category['category_id']);
+        }
+    }
+
+    /**
+     * Hiding (status = 0) categories, where is all products have status = 0
+     * @param $category_id
+     * @return int|mixed
+     */
+    function hideEmptyCategories($category_id){
+        $listChildCategories = $this->getCategories($category_id);
+        $parent_id = 99999;
+        if(empty($listChildCategories)){ //if have not nested categories
+            $listProducts = $this->getListProductsByCategory($category_id); //all products in category
+            $numbersOfProducts = $this->countActiveProducts($listProducts); //number of status=1 products in category
+            $parent_id = $this->getParentId($category_id);
+            if($numbersOfProducts == 0){
+                $this->hideCategory($category_id); //category was hiding
+            }
+        }else { //if nested categories is present
+            foreach ($listChildCategories as $child_id) {
+                $this->hideEmptyCategories($child_id);
+            }
+            $listChildCategories2 = $this->getCategories($category_id);
+
+            if(empty($listChildCategories2)){
+                $listProducts2 = $this->getListProductsByCategory($category_id); //all products in category
+                $numbersOfProducts2 = $this->countActiveProducts($listProducts2); //number of status=1 products in category
+                if($numbersOfProducts2 == 0){
+                    $this->hideCategory($category_id); //category was hiding
+                }
+            }
+        }
+        return $parent_id;
+    }
+
+    /**
+     * Hiding category
+     * @param $category_id
+     */
+    private function hideCategory($category_id){
+        $this->db->query("UPDATE `" . DB_PREFIX . "category` SET `status` = 0 WHERE `category_id` = '$category_id'");
+     }
+
+    /**
+     * Getting parent category by id
+     * @param $child_id
+     * @return mixed
+     */
+    private function getParentId($child_id){
+        $result = $this->db->query("SELECT `parent_id` FROM `" . DB_PREFIX . "category` WHERE `category_id`='$child_id'");
+        $value = 0;
+        if ($result->num_rows > 0) {
+            foreach($result->rows as $row) {
+                $value = $row['parent_id'];
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Counting products with status = 1 from list
+     * @param $listProducts
+     * @return int
+     */
+    private function countActiveProducts($listProducts){
+        $i = 0;
+        foreach ($listProducts as $productId){
+            $result = $this->db->query("SELECT COUNT( product_id ) AS count FROM `" . DB_PREFIX . "product` WHERE `product_id` = '$productId' AND `status` = 1");
+            if ($result->num_rows > 0) {
+                foreach($result->rows as $row) {
+                    $i += (int)$row['count'];
+                }
+            }
+        }
+        return $i;
+    }
+
+    /**
+     * Counting numbers of product in category
+     * @param $category_id
+     * @return array
+     */
+    private function getListProductsByCategory($category_id){
+        $listProducts = [];
+        $result = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product_to_category` WHERE `category_id` ='$category_id'");
+        if ($result->num_rows > 0) {
+            foreach($result->rows as $row) {
+                array_push($listProducts, $row['product_id']);
+            }
+        }
+        return $listProducts;
+    }
+
+    /**
+     * Getting subcategories from parent
+     * @param $parent_id
+     * @return array
+     */
+    private function getCategories($parent_id){
+        $listCategory = [];
+        $result = $this->db->query("SELECT `category_id` FROM `" . DB_PREFIX . "category` WHERE `parent_id`='$parent_id'");
+        if ($result->num_rows > 0) {
+            foreach($result->rows as $row) {
+                array_push($listCategory, $row['category_id']);
+            }
+        }
+        return $listCategory;
+    }
+//***************************************************************************************************************************************************
     /**
      * Checking is product already exist
      * @param $product_id

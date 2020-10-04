@@ -53,14 +53,17 @@ class ControllerApiExchangeAddProductStock extends Controller {
                     $productStocks = $_POST['productStock'];
 
                     foreach (json_decode($productStocks) as $type){
+                        $totalStock = $type->free_remains + $type->products_on_way;
                         if( $this->model_api_exchange_products->isProductExist($type->product_id) ){
                             $this->model_api_exchange_products->
-                            updateProductStock($type->product_id, $type->free_remains);
+                            updateProductStock($type->product_id, $totalStock);
                         }
                     }
+                    $this->model_api_exchange_products->hideZeroProductsBalances();
+                    $this->model_api_exchange_products->hideEmptyCategories(0);
                     $json['success'] = sprintf($this->language->get('success'));
                 }
-
+                $this->model_api_exchange_products->repairCategories();
             }
         }
 
