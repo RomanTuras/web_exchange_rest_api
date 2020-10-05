@@ -7,6 +7,7 @@ $_['text_extension']   = 'Extensions';
 $_['text_success']     = 'Success: You have modified WebExchange module!';
 $_['text_edit']        = 'Edit WebExchange module';
 $_['images_not_loaded'] = 'Ошибки изображений:';
+$_['text_timestamp'] = 'Последний обмен:';
 
 // Entry
 $_['entry_status']     = 'Status';

@@ -74,11 +74,13 @@ class ControllerExtensionModuleWebExchange extends Controller {
 		$data['user_token'] = $this->session->data['user_token'];
 
 		$data['images'] = $this->getImagesLog();
+		$data['exchange_timestamp'] = $this->getExchangeTimestamp();
 
 		$this->response->setOutput($this->load->view('extension/module/web_exchange', $data));
 	}
 
     /**
+     * Getting images filenames from log
      * @return array
      */
 	private function getImagesLog(){
@@ -94,6 +96,23 @@ class ControllerExtensionModuleWebExchange extends Controller {
             }
         }
         return $images;
+    }
+
+    /**
+     * @return false|string
+     */
+    private function getExchangeTimestamp() {
+        $log_exchange = __DIR__.'/exchange_timestamp.hlp';
+        $timestamp = '';
+        if(file_exists($log_exchange)){
+            if ($fh = fopen($log_exchange, 'r')) {
+                while (!feof($fh)) {
+                    $timestamp .= fgets($fh);
+                }
+                fclose($fh);
+            }
+        }
+        return $timestamp;
     }
 
 	protected function validate() {

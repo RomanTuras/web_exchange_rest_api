@@ -64,11 +64,32 @@ class ControllerApiExchangeAddProductStock extends Controller {
                     $json['success'] = sprintf($this->language->get('success'));
                 }
                 $this->model_api_exchange_products->repairCategories();
+                $this->addExchangeTimestamp();
             }
         }
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    /**
+     * Add exchange timestamp to the log file
+     */
+    private function addExchangeTimestamp() {
+        $path_to_log_images = dirname(__DIR__, 4);
+        $log_images = $path_to_log_images.'/admin/controller/extension/module/exchange_timestamp.hlp';
+        if(file_exists($log_images))unlink($log_images);
+        $d = date("d-m-Y").', time: '.date("h:i:sa");
+        $this->writeFile($log_images, $d);
+    }
+
+    /**
+     * Written log to file
+     * @param $filename String
+     * @param $text String
+     */
+    function writeFile($filename, $text){
+        file_put_contents($filename, $text."\r\n", FILE_APPEND);
     }
 
 }

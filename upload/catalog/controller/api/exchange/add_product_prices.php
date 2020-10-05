@@ -49,7 +49,6 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                 $json['error']['ip'] = sprintf($this->language->get('error_ip'), $this->request->server['REMOTE_ADDR']);
             }else{
                 $this->load->model('api/exchange/prices');
-                $this->load->model('api/exchange/products');
                 $json['success'] = sprintf($this->language->get('error'));
 
                 if (isset($this->request->post['productPrices'])) {
@@ -90,11 +89,8 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                             }
                         }
                     }
-                    $this->model_api_exchange_products->hideZeroProductsBalances();
-                    $this->model_api_exchange_products->hideEmptyCategories(0);
                     $json['success'] = sprintf($this->language->get('success'));
                 }
-                $this->model_api_exchange_products->repairCategories();
             }
         }
 
