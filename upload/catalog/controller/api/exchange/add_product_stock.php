@@ -79,7 +79,8 @@ class ControllerApiExchangeAddProductStock extends Controller {
         $path_to_log_images = dirname(__DIR__, 4);
         $log_images = $path_to_log_images.'/admin/controller/extension/module/exchange_timestamp.hlp';
         if(file_exists($log_images))unlink($log_images);
-        $d = date("d-m-Y").', time: '.date("h:i:sa");
+        $d = date('Y-m-d H:i:s', time());
+        // $d = date("d-m-Y").', time: '.date("h:i:sa");
         $this->writeFile($log_images, $d);
     }
 

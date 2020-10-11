@@ -70,9 +70,9 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                         $data = json_decode($data);
 
                         if($item->price_id == 4){//Розница
-                            if($this->model_api_exchange_prices->isProductExist($item->product_id)){
-                                $this->model_api_exchange_prices->updateProductPrice($item->product_id, $item->price_value);
-                            }
+//                            if($this->model_api_exchange_prices->isProductExist($item->product_id)){
+                            $this->model_api_exchange_prices->updateProductPrice($item->product_id, $item->price_value);
+//                            }
                         }
                         $price_type_in_product = $this->model_api_exchange_prices->isPriceTypeExistInProduct($item->product_id, $item->price_id);
                         if($price_type_in_product){
