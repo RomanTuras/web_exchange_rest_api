@@ -7,6 +7,14 @@
 class ModelApiExchangeProducts extends Model {
 
     /**
+     * Getting products with price = 0 and quantity > 0
+     * @return mixed
+     */
+    function getDisabledProducts() {
+        return $this->db->query("SELECT * FROM " . DB_PREFIX . "product WHERE `price` = 0 AND `quantity` > 0");
+    }
+
+    /**
      * Reset quantity to all products and change status to "Out of stock"
      */
     function hideAllProducts(){
@@ -19,10 +27,12 @@ class ModelApiExchangeProducts extends Model {
     }
 
     /**
-     * Hiding all products, where it is price = 0 or quantity of stock < 1
+     * Setting status OFF (0) to all products, where it is price = 0 or quantity of stock < 1
+     * Setting status ON (1) to all products, where it is price > 0 and quantity of stock > 0
      */
     function hideZeroProductsBalances(){
         $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 0 WHERE `price` = 0 OR `quantity` < 1");
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 1 WHERE `price` > 0 AND `quantity` > 0");
     }
 
     function repairCategories($parent_id = 0) {

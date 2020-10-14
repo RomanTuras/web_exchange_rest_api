@@ -63,7 +63,7 @@ class ControllerApiExchangeAddProducts extends Controller {
                 if (isset($this->request->post['products'])) {
 
                     $products = $_POST['products'];
-                    $this->model_api_exchange_products->hideAllProducts();
+//                    $this->model_api_exchange_products->hideAllProducts();
                     $language_id = $this->model_api_exchange_common->getLanguageIdByCode('ru-ru');
 
                     //Main loop (for each product)
