@@ -7,18 +7,18 @@
 class ModelApiExchangeProducts extends Model {
 
     /**
-     * Getting products with price = 0 and quantity > 0
+     * Getting products with price = 0 and quantity > 0 AND `status` = 0
      * @return mixed
      */
     function getDisabledProducts() {
-        return $this->db->query("SELECT * FROM " . DB_PREFIX . "product WHERE `price` = 0 AND `quantity` > 0");
+        return $this->db->query("SELECT * FROM " . DB_PREFIX . "product WHERE `price` = 0 AND `quantity` > 0 AND `status` = 0");
     }
 
     /**
      * Reset quantity to all products and change status to "Out of stock"
      */
     function hideAllProducts(){
-        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 0");
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = 0, `quantity` = 0");
     }
 
     //TODO temporary method for store logs to DB
