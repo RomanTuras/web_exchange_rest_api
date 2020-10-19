@@ -91,7 +91,6 @@ class ControllerApiExchangeAddProducts extends Controller {
                         $data = json_encode($arr);
                         $data = json_decode($data);
 
-                        $this->model_api_exchange_products->deleteImages($product->code);
                         if( $this->model_api_exchange_products->isProductExist($product->code) ){//Product exist- update
                             $this->model_api_exchange_products->updateProduct($data);
                             $this->model_api_exchange_products->updateProductDescription($data);
