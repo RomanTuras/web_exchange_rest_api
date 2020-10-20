@@ -56,7 +56,7 @@ class ControllerApiExchangeAddImages extends Controller {
 
                     foreach (json_decode($product_images) as $product){
                         $images = $product->images;
-                        $this->model_api_exchange_products->deleteImages($product->code);
+                        $this->model_api_exchange_products->deleteImages($product->product_id);
                         if( is_array($images) && count($images) > 0 ){
                             $i = 0;
                             foreach ( $images as $obj ){
