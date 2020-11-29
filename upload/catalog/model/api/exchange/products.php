@@ -7,6 +7,25 @@
 class ModelApiExchangeProducts extends Model {
 
     /**
+     * Getting enabled products with all price types
+     * @return mixed
+     */
+    function getEnabledProducts() {
+        return $this->db->query("SELECT 
+            oc_product_discount.product_id, 
+            oc_product_discount.customer_group_id as price_type,
+            oc_product_discount.price as price_value, 
+            oc_product_special.price as special_value, 
+            oc_product_special.date_end as special_date_end
+            FROM `oc_product` 
+            LEFT JOIN `oc_product_discount` 
+            ON  oc_product.product_id = oc_product_discount.product_id 
+            LEFT JOIN `oc_product_special`
+            ON oc_product.product_id = oc_product_special.product_id AND oc_product_special.date_end >= CURDATE() AND oc_product_special.customer_group_id = oc_product_discount.customer_group_id
+            WHERE oc_product.status=1");
+    }
+
+    /**
      * Getting products with price = 0 and quantity > 0 AND `status` = 0
      * @return mixed
      */

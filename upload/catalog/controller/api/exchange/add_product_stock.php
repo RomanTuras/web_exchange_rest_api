@@ -55,7 +55,7 @@ class ControllerApiExchangeAddProductStock extends Controller {
                     $this->model_api_exchange_products->hideAllProducts();
 
                     foreach (json_decode($productStocks) as $type){
-                        $totalStock = $type->free_remains + $type->products_on_way;
+                        $totalStock = (int)$type->free_remains + (int)$type->products_on_way;
                         if( $this->model_api_exchange_products->isProductExist($type->product_id) ){
                             $this->model_api_exchange_products->
                             updateProductStock($type->product_id, $totalStock);

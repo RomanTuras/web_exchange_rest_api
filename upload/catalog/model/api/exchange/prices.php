@@ -120,6 +120,22 @@ class ModelApiExchangePrices extends Model {
         NOW(), '$data->special_date_end')");
     }
 
+    /**
+     * Deleting rows from table by price_id / 0909
+     * @param $price_id
+     */
+    function deleteRowsByPriceId($price_id){
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_discount` WHERE `customer_group_id`='$price_id' ");
+    }
+
+    /**
+     * Deleting special price type
+     * @param $data
+     */
+    function deleteSpecial($data) {
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_special` WHERE `product_id`='$data->product_id' AND `customer_group_id`='$data->price_id'");
+    }
+
     function updateSpecial($data){
         $this->db->query("UPDATE `" . DB_PREFIX . "product_special` SET `price`='$data->price_special_value', 
         `date_start`= NOW(), `date_end` = '$data->special_date_end' 
@@ -170,14 +186,6 @@ class ModelApiExchangePrices extends Model {
         if ($query->num_rows === 0){
             return false;
         } else return $query->row;
-    }
-
-    /**
-     * Deleting rows from table by price_id / 0909
-     * @param $price_id
-     */
-    function deleteRowsByPriceId($price_id){
-        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_discount` WHERE `customer_group_id`='$price_id' ");
     }
 
 }
