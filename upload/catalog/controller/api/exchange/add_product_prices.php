@@ -55,6 +55,8 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                     $productPrices = $_POST['productPrices'];
 //                    $this->log->write(print_r($productPrices, true));
 
+                    $json['success'] = sprintf($this->language->get('error'));
+
                     foreach (json_decode($productPrices) as $item){
                         $price_special_value = isset($item->price_special_value) ? $item->price_special_value : 0;
                         $special_date_end = isset($item->special_date_end) ? $item->special_date_end : '0000-00-00';
@@ -92,8 +94,8 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                                 $this->model_api_exchange_prices->deleteSpecial($data);
                             }
                         }
+                        $json['success'] = sprintf($this->language->get('success'));
                     }
-                    $json['success'] = sprintf($this->language->get('success'));
                 }
             }
         }
