@@ -71,11 +71,13 @@ class ControllerApiExchangeAddProducts extends Controller {
 //                        $this->log->write($product->name);
                         $keyword = addslashes($this->model_api_exchange_common->cyrToLat($product->name));
                         $query = 'product_id='.$product->code;
+                        $img = '';
+                        if (isset($product->mainImage)) $img = $this->imagePath . $product->mainImage;
                         $arr = array(
                             'product_id' => $product->code,
                             'model' => $product->code,
                             'name' => addslashes($product->name),
-                            'image' => $this->imagePath . $product->mainImage,
+                            'image' => $img,
 //                            'stock_status_id' => 5, //$this->getStockStatus($product), //Status, after quantity < 1
                             'category_id' => $product->codeGroup,
                             'language_id' => $language_id,

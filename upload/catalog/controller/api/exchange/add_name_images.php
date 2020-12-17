@@ -80,12 +80,12 @@ class ControllerApiExchangeAddNameImages extends Controller {
         $path_to_log_images = dirname(__DIR__, 4);
         $log_images = $path_to_log_images.'/admin/controller/extension/module/log_images.hlp';
         if(file_exists($log_images))unlink($log_images);
-        $path_to_images = dirname(__DIR__, 4).'/image/img/';
-        $result = $this->model_api_exchange_images->getAllImages();
-        if ($result->num_rows > 0) {
+        $path_to_images = dirname(__DIR__, 4); // home/h63053/data/www/optovik.shop/image/img/
+        $imagesResult = $this->model_api_exchange_images->getAllImages();
+        if ($imagesResult->num_rows > 0) {
             $i = 0;
-            foreach($result->rows as $row) {
-                if(!file_exists($path_to_images.$row['img_name'])){
+            foreach($imagesResult->rows as $row) {
+                if(!file_exists($path_to_images . '/image/img/' . $row['img_name'])){
                     $filename = $row['img_name'];
                     $i++;
                     $this->writeFile($log_images, $filename);
@@ -93,6 +93,33 @@ class ControllerApiExchangeAddNameImages extends Controller {
                 }
             }
         }
+
+        $additionalImagesResult = $this->model_api_exchange_images->getAllAdditionalImages();
+        if ($additionalImagesResult->num_rows > 0) {
+            $i = 0;
+            foreach($additionalImagesResult->rows as $row) {
+                if(!file_exists($path_to_images . '/image/' . $row['image'])){
+                    $filename = $row['image'];
+                    $i++;
+                    $this->writeFile($log_images, $filename);
+                    $this->model_api_exchange_images->deleteAdditionalImage($filename, $row['product_id']);
+                }
+            }
+        }
+
+        $productImagesResult = $this->model_api_exchange_images->getAllProductImages();
+        if ($productImagesResult->num_rows > 0) {
+            $i = 0;
+            foreach($productImagesResult->rows as $row) {
+                if(!file_exists($path_to_images . '/image/' . $row['image'])){
+                    $filename = $row['image'];
+                    $i++;
+                    $this->writeFile($log_images, $filename);
+                    $this->model_api_exchange_images->deleteProductImage($row['product_id']);
+                }
+            }
+        }
+
     }
 
     /**

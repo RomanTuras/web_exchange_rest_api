@@ -41,7 +41,7 @@ class ModelApiExchangeImages extends Model {
      * @param $img_name
      */
     function deleteImageByName($img_name){
-        $this->db->query("DELETE FROM `" . DB_PREFIX . "images` WHERE `img_name` = '$img_name'");
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "images` WHERE `img_name` LIKE '$img_name'");
     }
 
     /**
@@ -50,6 +50,22 @@ class ModelApiExchangeImages extends Model {
      */
     function getAllImages(){
         return $this->db->query("SELECT * FROM `" . DB_PREFIX . "images` WHERE 1");
+    }
+
+    function getAllAdditionalImages(){
+        return $this->db->query("SELECT * FROM `" . DB_PREFIX . "product_image` WHERE 1");
+    }
+
+    function deleteAdditionalImage($image, $product_id) {
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_image` WHERE `image` LIKE '$image' AND `product_id` = '$product_id'");
+    }
+
+    function getAllProductImages(){
+        return $this->db->query("SELECT * FROM `" . DB_PREFIX . "product_image` WHERE 1");
+    }
+
+    function deleteProductImage($product_id) {
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `image`='' WHERE `product_id` = '$product_id'");
     }
 
 }
