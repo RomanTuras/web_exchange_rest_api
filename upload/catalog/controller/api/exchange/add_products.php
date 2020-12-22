@@ -72,7 +72,7 @@ class ControllerApiExchangeAddProducts extends Controller {
                         $keyword = addslashes($this->model_api_exchange_common->cyrToLat($product->name));
                         $query = 'product_id='.$product->code;
                         $img = '';
-                        if (isset($product->mainImage)) $img = $this->imagePath . $product->mainImage;
+                        if (isset($product->mainImage) && strlen($product->mainImage) > 3) $img = $this->imagePath . $product->mainImage;
                         $arr = array(
                             'product_id' => $product->code,
                             'model' => $product->code,

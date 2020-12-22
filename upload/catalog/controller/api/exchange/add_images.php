@@ -52,7 +52,6 @@ class ControllerApiExchangeAddImages extends Controller {
 
                 if (isset($this->request->post['product_images'])) {
                     $product_images = $_POST['product_images'];
-                    $imagePath = 'img/';
 
                     foreach (json_decode($product_images) as $product){
                         $images = $product->images;
@@ -60,10 +59,12 @@ class ControllerApiExchangeAddImages extends Controller {
                         if( is_array($images) && count($images) > 0 ){
                             $i = 0;
                             foreach ( $images as $obj ){
+                                $imagePath = '';
+                                if (isset($obj->name) && strlen($obj->name) > 3) $imagePath = 'img/' . $obj->name;
                                 $data_image = array(
                                     'product_id' => (int)$product->product_id,
                                     'sort_order' => $i++,
-                                    'image' => isset($obj->name) ? $imagePath . $obj->name : ''
+                                    'image' => $imagePath
                                 );
                                 $json_images = json_encode($data_image);
                                 $data = json_decode($json_images);
