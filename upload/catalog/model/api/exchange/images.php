@@ -44,6 +44,12 @@ class ModelApiExchangeImages extends Model {
         $this->db->query("DELETE FROM `" . DB_PREFIX . "images` WHERE `img_name` LIKE '$img_name'");
     }
 
+    function deleteProductImageByName($image_name){
+        $image_name = '%'.$image_name;
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product` WHERE `image` LIKE '$image_name'");
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_image` WHERE `image` LIKE '$image_name'");
+    }
+
     /**
      * Getting all images from table 'images'
      * @return mixed
