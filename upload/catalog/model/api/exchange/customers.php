@@ -3,7 +3,8 @@
 class ModelApiExchangeCustomers extends Model{
 
     function getCustomerId($telephone){
-        $result = $this->db->query("SELECT `customer_id` FROM `" . DB_PREFIX . "customer` WHERE `telephone` = '$telephone'");
+        $telephone = '%'.$telephone;
+        $result = $this->db->query("SELECT `customer_id` FROM `" . DB_PREFIX . "customer` WHERE `telephone` LIKE '$telephone'");
         if ($result->num_rows > 0) {
             foreach($result->rows as $row) {
                 return $row['customer_id'];

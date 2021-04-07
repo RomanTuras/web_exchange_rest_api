@@ -55,8 +55,10 @@ class ControllerApiExchangeCustomers extends Controller {
 
                     foreach (json_decode($customers) as $customer){
                         $telephone_from_server = $this->clearPhoneNumber($customer->telephone);
+                        $start = strlen($telephone_from_server) - 9; //Last nine chars of the phone number
+                        $phone_for_query = substr($telephone_from_server, $start);
                         $json['phone'] = $telephone_from_server;
-                        $customer_id = $this->model_api_exchange_customers->getCustomerId($telephone_from_server);
+                        $customer_id = $this->model_api_exchange_customers->getCustomerId($phone_for_query);
                         if( $customer_id ) {
                             $this->model_api_exchange_customers->
                             updateCustomer($customer_id, $customer->price_id, $customer->markup);
@@ -70,9 +72,14 @@ class ControllerApiExchangeCustomers extends Controller {
                     if ($result->num_rows > 0) {
                         foreach($result->rows as $row) {
                             $cleared_phone = $this->clearPhoneNumber($row['telephone']);
+                            if (strcmp($cleared_phone, $row['telephone']) !== 0) {
+                                $this->model_api_exchange_customers->
+                                updateCustomerTelephone($row['customer_id'], $cleared_phone);
+                            }
+
+                            if (strlen($cleared_phone) === 10) $cleared_phone = '38'.$cleared_phone;
+                            else if (strlen($cleared_phone) === 11) $cleared_phone = '3'.$cleared_phone;
                             array_push($telephones, $cleared_phone);
-                            $this->model_api_exchange_customers->
-                            updateCustomerTelephone($row['customer_id'], $cleared_phone);
                         }
                     }
                     $json['customers'] = $telephones;
