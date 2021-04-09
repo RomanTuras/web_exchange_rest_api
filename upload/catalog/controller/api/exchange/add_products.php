@@ -85,7 +85,7 @@ class ControllerApiExchangeAddProducts extends Controller {
                             'layout_id' => 0,
                             'keyword' => $keyword,
                             'query' => $query,
-                            'status' => $product->status,
+                            'status' => 0,
                             'length' => $product->length,
                             'height' => $product->height,
                             'width' => $product->width

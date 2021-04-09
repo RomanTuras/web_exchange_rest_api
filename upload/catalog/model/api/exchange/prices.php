@@ -33,6 +33,20 @@ class ModelApiExchangePrices extends Model {
     }
 
     /**
+     * Getting the main product price
+     * @param $product_id
+     * @return int
+     */
+    function getPrice($product_id) {
+        $result = $this->db->query("SELECT `price` FROM `" . DB_PREFIX . "product` WHERE `product_id` = '$product_id'");
+        if ($result->num_rows > 0){
+            foreach($result->rows as $row) {
+                return $row['price'];
+            }
+        } else return 0;
+    }
+
+    /**
      * Adding price type / 0909
      * @param $price_id
      * @param $description
@@ -53,6 +67,15 @@ class ModelApiExchangePrices extends Model {
     function updatePriceType($price_id, $description){
         $this->db->query("UPDATE `" . DB_PREFIX . "customer_group_description` SET `description`='$description', `name`='$description' 
         WHERE `customer_group_id` = '$price_id'");
+    }
+
+    /**
+     * Update main product price
+     * @param $product_id
+     * @param $value
+     */
+    function updatePrice($product_id, $value){
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `price`='$value' WHERE `product_id` = '$product_id'");
     }
 
     /**

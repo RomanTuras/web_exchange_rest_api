@@ -72,7 +72,7 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                         $data = json_encode($arr);
                         $data = json_decode($data);
 
-                        if((int)$item->price_id == 4 && $item->price_value > 0){//Розница
+                        if($item->price_id == 4 && $item->price_value > 0){//Розница
 //                            if($this->model_api_exchange_prices->isProductExist($item->product_id)){
                             $this->model_api_exchange_prices->updateProductPrice($item->product_id, $item->price_value);
 //                            }
@@ -95,6 +95,20 @@ class ControllerApiExchangeAddProductPrices extends Controller {
                                 $this->model_api_exchange_prices->deleteSpecial($data);
                             }
                         }
+
+                        //Checking, is main price exist and > 0
+                        $main_price = $this->model_api_exchange_prices->getPrice($item->product_id);
+                        //Update main price from price types repository
+                        if($main_price == 0){
+                            $row = $this->model_api_exchange_prices->getPriceProductByType($item->product_id, 4);
+                            if($row) {
+                                $price = $row['price_value'];
+                                if($price > 0){
+                                    $this->model_api_exchange_prices->updatePrice($item->product_id, $price);
+                                }
+                            }
+                        }
+
                         $this->model_api_exchange_products->hideZeroProductsBalances();
                         $json['success'] = sprintf($this->language->get('success'));
                     }
