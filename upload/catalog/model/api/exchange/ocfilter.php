@@ -42,9 +42,21 @@ class ModelApiExchangeOcfilter extends Model {
      * @return Int option_id
      */
     function addOption($data){
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option` (type, keyword, status) 
+        if (property_exists($data, 'index')) {// Insert with SORT_ORDER
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option` (type, keyword, status, sort_order) 
+        VALUES('$data->type', '$data->keyword', '$data->status', '$data->index')");
+            return $this->db->getLastId();
+        } else {// Insert without SORT_ORDER
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "ocfilter_option` (type, keyword, status) 
         VALUES('$data->type', '$data->keyword', '$data->status')");
-        return $this->db->getLastId();
+            return $this->db->getLastId();
+        }
+
+    }
+
+    function updateOption($data){
+        $this->db->query("UPDATE `" . DB_PREFIX . "ocfilter_option` SET `sort_order`='$data->index'
+        WHERE `option_id` = '$data->option_id'");
     }
 
     /**

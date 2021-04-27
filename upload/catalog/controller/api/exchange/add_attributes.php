@@ -94,8 +94,12 @@ class ControllerApiExchangeAddAttributes extends Controller {
                                     'language_id' => $language_id,
                                     'name' => $this->cutSymbols($attribute->name),
                                     'option_id' => $option_id,
-                                    'codeGroup' => $product->codeGroup
+                                    'codeGroup' => $product->codeGroup,
+                                    'index' => property_exists($attribute,'index_attribute') ? $attribute->index_attribute : 999,
                                 );
+                                if ($data_options['index'] == 999) {
+                                    unset($data_options['index']);
+                                }
                                 $json_options = json_encode($data_options);
                                 $data_options = json_decode($json_options);
 
@@ -106,6 +110,9 @@ class ControllerApiExchangeAddAttributes extends Controller {
                                     $this->model_api_exchange_ocfilter->addOptionDescription($data_options);
                                     $this->model_api_exchange_ocfilter->addOptionToCategory($option_id, $product->codeGroup);
                                 }else{
+                                    if (property_exists($data_options, 'index')) {// Update sort_order if it's index are exist
+                                        $this->model_api_exchange_ocfilter->updateOption($data_options);
+                                    }
                                     $this->model_api_exchange_ocfilter->addOptionToCategory($option_id, $product->codeGroup);
                                 }
                                 // $this->log->write('group: '.$product->codeGroup.', product: '.$product->product_id);
