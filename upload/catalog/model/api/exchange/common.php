@@ -11,7 +11,7 @@ class ModelApiExchangeCommon extends Model{
         foreach ($listCategory as $category_id) {
             $this->deleteEmptyCategories($category_id);
         }
-        $this->deleteCacheFiles('/home/h63053/data/www/storage_optovik_shop/cache',
+        $this->deleteCacheFiles('/home/web_opt_shop/web/optovik.shop/public_shtml/storage_optovik_shop/cache',
             '[^cache.octemplates.category_in_menu*]');
     }
 

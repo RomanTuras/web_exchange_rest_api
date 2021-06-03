@@ -151,6 +151,10 @@ class ModelApiExchangePrices extends Model {
         $this->db->query("DELETE FROM `" . DB_PREFIX . "product_discount` WHERE `customer_group_id`='$price_id' ");
     }
 
+    function deleteDiscount($data) {
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_discount` WHERE `product_id`='$data->product_id' AND `customer_group_id`='$data->price_id'");
+    }
+
     /**
      * Deleting special price type
      * @param $data

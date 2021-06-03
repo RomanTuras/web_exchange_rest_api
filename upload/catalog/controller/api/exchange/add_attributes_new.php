@@ -14,9 +14,9 @@
  * attributes - Array of JSON [{'name':'Производитель', 'property':'Electrolux'}]
  */
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 class ControllerApiExchangeAddAttributes extends Controller {
 
@@ -63,7 +63,7 @@ class ControllerApiExchangeAddAttributes extends Controller {
                 if (isset($this->request->post['product_attributes'])) {
                     $product_attributes = $_POST['product_attributes'];
 
-                //    $this->log->write('attr: '.print_r($product_attributes, true));
+//                    $this->log->write('attr: '.print_r($product_attributes, true));
 
                     $language_id = $this->model_api_exchange_common->getLanguageIdByCode('ru-ru');
 
@@ -81,12 +81,14 @@ class ControllerApiExchangeAddAttributes extends Controller {
                                     if( $manufacturer_id == 0 ){
                                         $manufacturer_id = $this->model_api_exchange_manufacturer->
                                         addManufacturer($this->cutSymbols($attribute->property));
+                                    }else {
+                                        $this->model_api_exchange_products->updateManufacturerProduct($product->product_id, $manufacturer_id);
                                     }
-                                    $this->model_api_exchange_products->updateManufacturerProduct($product->product_id, $manufacturer_id);
                                 }
 
-                                $option_keyword = $this->model_api_exchange_common->cyrToLat($attribute->name);
-                                $option_id = $this->model_api_exchange_ocfilter->isOptionExist($option_keyword);
+                                $option_keyword = $this->model_api_exchange_common1->cyrToLat($attribute->name);
+                                $option_id = $attribute->attribute_id;//$this->model_api_exchange_ocfilter->isOptionExist($option_keyword);
+                                $attribute_id = $attribute->attribute_id;
                                 $data_options = array(
                                     'type' => 'checkbox',
                                     'keyword' => $option_keyword,
@@ -95,27 +97,25 @@ class ControllerApiExchangeAddAttributes extends Controller {
                                     'name' => $this->cutSymbols($attribute->name),
                                     'option_id' => $option_id,
                                     'codeGroup' => $product->codeGroup,
-                                    'index' => property_exists($attribute,'index_attribute') ? $attribute->index_attribute : 999,
+                                    'index_attribute' => property_exists($attribute,'index_attribute') ? $attribute->index_attribute : 999,
+
                                 );
-                                if ($data_options['index'] == 999) {
-                                    unset($data_options['index']);
+                                if ($data_options['index_attribute'] == 999) {
+                                    unset($data_options['index_attribute']);
                                 }
                                 $json_options = json_encode($data_options);
                                 $data_options = json_decode($json_options);
 
 
-                                if(!$option_id){
-                                    $option_id = $this->model_api_exchange_ocfilter->addOption($data_options);
-                                    $data_options->option_id = $option_id;
+                                if(!$this->model_api_exchange_ocfilter->isOptionExistById($option_id)){
+                                    $this->model_api_exchange_ocfilter->addOption($data_options);
                                     $this->model_api_exchange_ocfilter->addOptionDescription($data_options);
                                     $this->model_api_exchange_ocfilter->addOptionToCategory($option_id, $product->codeGroup);
                                 }else{
-                                    if (property_exists($data_options, 'index')) {// Update sort_order if it's index are exist
-                                        $this->model_api_exchange_ocfilter->updateOption($data_options);
-                                    }
+                                    $this->model_api_exchange_ocfilter->updateOption($data_options);
                                     $this->model_api_exchange_ocfilter->addOptionToCategory($option_id, $product->codeGroup);
                                 }
-                                
+                                // $this->log->write('group: '.$product->codeGroup.', product: '.$product->product_id);
 
                                 if(!$this->model_api_exchange_attribute->isAttributeGroupExist($product->codeGroup)){ //if group not found - add it
                                     $this->model_api_exchange_attribute->addGroupAttribute($data_options);
@@ -143,12 +143,17 @@ class ControllerApiExchangeAddAttributes extends Controller {
                                     $this->model_api_exchange_ocfilter->addOptionValueToProduct($data_value);
                                 }
 
+//                                if(!$this->model_api_exchange_ocfilter->isValueExist($value_id)){
+//                                    $this->model_api_exchange_ocfilter->addOptionValue($data_value);
+//                                    $this->model_api_exchange_ocfilter->addOptionValueToProduct($data_value);
+//                                }{
+//                                    $this->model_api_exchange_ocfilter->updateOptionValue($data_value);
+//                                    $this->model_api_exchange_ocfilter->addOptionValueToProduct($data_value);
+//                                }
 
-                                // $this->log->write('Product: '.$product->product_id . 'data_value: ' . print_r($data_value, true));
+//                                $attribute_name = $this->cutSymbols($attribute->name);
 
-                                $attribute_name = $this->cutSymbols($attribute->name);
-                                $attribute_id = $this->model_api_exchange_attribute->isAttributeExist($attribute_name, $product->codeGroup);
-                                if(!$attribute_id){ //if attribute not found - add it
+                                if(!$this->model_api_exchange_attribute->isAttributeExist($attribute_id, $product->codeGroup)){ //if attribute not found - add it
                                     $this->model_api_exchange_attribute->addAttribute($data_options);
                                 }
                                 $this->model_api_exchange_attribute->addAttributeToProduct($attribute_id, $product->product_id, $this->cutSymbols($attribute->property), $language_id);
@@ -160,7 +165,9 @@ class ControllerApiExchangeAddAttributes extends Controller {
                         '[^cache.ocfilter.option*]');
                     $this->model_api_exchange_common->deleteCacheFiles('/home/h63053/data/www/storage_optovik_shop/cache',
                         '[^cache.ocfilter.manufacturer*]');
-                    $json['success'] = sprintf($this->language->get('success'));
+
+//                    $json['success'] = sprintf($this->language->get('success'));
+                    $json['success'] = var_dump(json_decode($product_attributes));
                 }
             }
         }
@@ -178,3 +185,4 @@ class ControllerApiExchangeAddAttributes extends Controller {
 
 
 }
+

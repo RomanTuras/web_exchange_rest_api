@@ -78,11 +78,18 @@ class ControllerApiExchangeAddProductPrices extends Controller {
 //                            }
                         }
                         $price_type_in_product = $this->model_api_exchange_prices->isPriceTypeExistInProduct($item->product_id, $item->price_id);
-                        if($price_type_in_product){
-                            $this->model_api_exchange_prices->updatePriceTypeInProduct($data);
+
+                        if ($item->price_value != 0) {
+                            if($price_type_in_product){
+                                $this->model_api_exchange_prices->updatePriceTypeInProduct($data);
+                            } else {
+                                $this->model_api_exchange_prices->addProductPrice($data);
+                            }
                         } else {
-                            $this->model_api_exchange_prices->addProductPrice($data);
+                            $this->model_api_exchange_prices->deleteDiscount($data);
                         }
+
+
                         $data->customer_group_id = $item->price_id;
                         if($price_special_value > 0){
                             if($this->model_api_exchange_prices->isSpecialExistInProduct($item->product_id, $item->price_id)){
